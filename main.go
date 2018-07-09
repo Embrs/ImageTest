@@ -306,7 +306,6 @@ func Otsu(GaryChannel [][]uint8) {
 		}
 		fmt.Printf("%v:%v\n", i, GarySum[i])
 	}
-
 	fmt.Printf("max1:%v, max2:%v\n", MaxIndex1, MaxIndex2)
 }
 
