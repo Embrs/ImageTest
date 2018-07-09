@@ -16,14 +16,19 @@ func main() {
 	// fmt.Println("%v", img)
 	elapsed1 := time.Since(t1)
 	fmt.Println("App elapsed: ", elapsed1)
-	Otsu(img[4])
+
 	t2 := time.Now()
+	Otsu(img[4])
+	elapsed2 := time.Since(t2)
+	fmt.Println("App elapsed: ", elapsed2)
+
+	t3 := time.Now()
 	err := SaveAsJPEG("example/new.jpg", img, 100)
 	if err != nil {
 		panic(err)
 	}
-	elapsed2 := time.Since(t2)
-	fmt.Println("App elapsed: ", elapsed2)
+	elapsed3 := time.Since(t3)
+	fmt.Println("App elapsed: ", elapsed3)
 }
 
 // create a new rgba matrix
@@ -285,28 +290,90 @@ func SaveAsJPEG(filepath string, imgMatrix [][][]uint8, quality int) error {
 
 	return nil
 }
+
 func Otsu(GaryChannel [][]uint8) {
 	GarySum := make([]int, 256, 256)
+	GaryPre := make([]float32, 256, 256)
 	height := len(GaryChannel)
 	width := len(GaryChannel[0])
-	MaxVal := -1
-	MaxIndex1 := 0
-	MaxIndex2 := 0
 	for i := 0; i < height; i++ {
 		for j := 0; j < width; j++ {
 			GarySum[GaryChannel[i][j]]++
 		}
 	}
 
+	PixelSum := (len(GaryChannel) * len(GaryChannel[0]))
 	for i := 0; i < 256; i++ {
-		if GarySum[i] > MaxVal {
-			MaxVal = GarySum[i]
-			MaxIndex2 = MaxIndex1
-			MaxIndex1 = i
-		}
-		fmt.Printf("%v:%v\n", i, GarySum[i])
+
+		GaryPre[i] = float32(GarySum[i]) / float32(PixelSum)
+		fmt.Printf("%v:%v\n", i, GaryPre[i])
 	}
-	fmt.Printf("max1:%v, max2:%v\n", MaxIndex1, MaxIndex2)
+
+	var (
+		w0       float32 = 0
+		w1       float32 = 0
+		u0       float32 = 0
+		u1       float32 = 0
+		u0tmp    float32 = 0
+		u1tmp    float32 = 0
+		u        float32 = 0
+		deltaTmp float32 = 0
+		deltaMax float32 = 0 
+		threshold float32 = 0
+	)
+
+	for i := 0; i < 256; i++ {
+		for j := 0; j < 256; j++ {
+			if j <= i {
+				w0 += GaryPre[j]
+				u0tmp += float32(j) * GaryPre[j]
+			} else {
+				w1 += GaryPre[j]
+				u1tmp += float32(j) * GaryPre[j]
+			}
+		}
+		u0 = u0tmp / w0
+		u1 = u1tmp / w1
+		u = u0tmp + u1tmp
+		deltaTmp = w0*(u0-u)*(u0-u) + w1*(u1-u)*(u1-u)
+		if (deltaTmp > deltaMax)
+		    {
+		        deltaMax = deltaTmp;
+		        threshold = i;
+		    }
+	}
+
+	// float w0, w1, u0tmp, u1tmp, u0, u1, u, deltaTmp, deltaMax = 0;
+	// for (i = 0; i < GrayScale; i++)     // i作为阈值
+	// {
+	//     w0 = w1 = u0tmp = u1tmp = u0 = u1 = u = deltaTmp = 0;
+	//     for (j = 0; j < GrayScale; j++)
+	//     {
+	//         if (j <= i)   //背景部分
+	//         {
+	//             w0 += pixelPro[j];
+	//             u0tmp += j * pixelPro[j];
+	//         }
+	//         else   //前景部分
+	//         {
+	//             w1 += pixelPro[j];
+	//             u1tmp += j * pixelPro[j];
+	//         }
+	//     }
+	//     u0 = u0tmp / w0;
+	//     u1 = u1tmp / w1;
+	//     u = u0tmp + u1tmp;
+	//     deltaTmp = w0 * pow((u0 - u), 2) + w1 * pow((u1 - u), 2);
+	//     if (deltaTmp > deltaMax)
+	//     {
+	//         deltaMax = deltaTmp;
+	//         threshold = i;
+	//     }
+	// }
+
+	// return threshold;
+
+	// fmt.Printf("max1:%v, max2:%v\n", MaxIndex1, MaxIndex2)
 }
 
 //--------------------------------------------------------------------------
