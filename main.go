@@ -12,7 +12,7 @@ import (
 
 func main() {
 	t1 := time.Now()
-	img := MustRead("example/test.jpg")
+	img := MustRead("example/images.jpg")
 	// fmt.Println("%v", img)
 	elapsed1 := time.Since(t1)
 	fmt.Println("App elapsed1: ", elapsed1)
@@ -74,14 +74,11 @@ func convertToNRGBA(src image.Image) *image.NRGBA {
 		i0 := dst.PixOffset(dstMinX, dstMinY)
 		for y := srcMinY; y < srcMaxY; y, i0 = y+1, i0+dst.Stride {
 			for x, i := srcMinX, i0; x < srcMaxX; x, i = x+1, i+4 {
-
 				j := src0.PixOffset(x, y)
-
 				dst.Pix[i+0] = src0.Pix[j+0]
 				dst.Pix[i+1] = src0.Pix[j+2]
 				dst.Pix[i+2] = src0.Pix[j+4]
 				dst.Pix[i+3] = src0.Pix[j+6]
-
 			}
 		}
 
@@ -89,7 +86,6 @@ func convertToNRGBA(src image.Image) *image.NRGBA {
 		i0 := dst.PixOffset(dstMinX, dstMinY)
 		for y := srcMinY; y < srcMaxY; y, i0 = y+1, i0+dst.Stride {
 			for x, i := srcMinX, i0; x < srcMaxX; x, i = x+1, i+4 {
-
 				j := src0.PixOffset(x, y)
 				a := src0.Pix[j+3]
 				dst.Pix[i+3] = a
