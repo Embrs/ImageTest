@@ -306,20 +306,20 @@ func Otsu(GaryChannel [][]uint8) {
 	for i := 0; i < 256; i++ {
 
 		GaryPre[i] = float32(GarySum[i]) / float32(PixelSum)
-		fmt.Printf("%v:%v\n", i, GaryPre[i])
+		// fmt.Printf("%v:%v\n", i, GaryPre[i])
 	}
 
 	var (
-		w0       float32 = 0
-		w1       float32 = 0
-		u0       float32 = 0
-		u1       float32 = 0
-		u0tmp    float32 = 0
-		u1tmp    float32 = 0
-		u        float32 = 0
-		deltaTmp float32 = 0
-		deltaMax float32 = 0 
-		threshold float32 = 0
+		w0        float32 = 0
+		w1        float32 = 0
+		u0        float32 = 0
+		u1        float32 = 0
+		u0tmp     float32 = 0
+		u1tmp     float32 = 0
+		u         float32 = 0
+		deltaTmp  float32 = 0
+		deltaMax  float32 = 0
+		threshold uint8   = 0
 	)
 
 	for i := 0; i < 256; i++ {
@@ -336,12 +336,13 @@ func Otsu(GaryChannel [][]uint8) {
 		u1 = u1tmp / w1
 		u = u0tmp + u1tmp
 		deltaTmp = w0*(u0-u)*(u0-u) + w1*(u1-u)*(u1-u)
-		if (deltaTmp > deltaMax)
-		    {
-		        deltaMax = deltaTmp;
-		        threshold = i;
-		    }
+		if deltaTmp > deltaMax {
+			deltaMax = deltaTmp
+			fmt.Println(i)
+			threshold = uint8(i)
+		}
 	}
+	fmt.Println(threshold)
 
 	// float w0, w1, u0tmp, u1tmp, u0, u1, u, deltaTmp, deltaMax = 0;
 	// for (i = 0; i < GrayScale; i++)     // i作为阈值
