@@ -15,12 +15,12 @@ func main() {
 	img := MustRead("example/test.jpg")
 	// fmt.Println("%v", img)
 	elapsed1 := time.Since(t1)
-	fmt.Println("App elapsed: ", elapsed1)
+	fmt.Println("App elapsed1: ", elapsed1)
 
 	t2 := time.Now()
-	Otsu(img[4])
+	img[5] = Otsu(img[4])
 	elapsed2 := time.Since(t2)
-	fmt.Println("App elapsed: ", elapsed2)
+	fmt.Println("App elapsed2: ", elapsed2)
 
 	t3 := time.Now()
 	err := SaveAsJPEG("example/new.jpg", img, 100)
@@ -28,7 +28,7 @@ func main() {
 		panic(err)
 	}
 	elapsed3 := time.Since(t3)
-	fmt.Println("App elapsed: ", elapsed3)
+	fmt.Println("App elapsed3: ", elapsed3)
 }
 
 // create a new rgba matrix
@@ -277,7 +277,7 @@ func SaveAsJPEG(filepath string, imgMatrix [][][]uint8, quality int) error {
 	nrgba := image.NewNRGBA(image.Rect(0, 0, width, height))
 	for i := 0; i < height; i++ {
 		for j := 0; j < width; j++ {
-			nrgba.SetNRGBA(j, i, color.NRGBA{imgMatrix[4][i][j], imgMatrix[4][i][j], imgMatrix[4][i][j], imgMatrix[3][i][j]})
+			nrgba.SetNRGBA(j, i, color.NRGBA{imgMatrix[5][i][j], imgMatrix[5][i][j], imgMatrix[5][i][j], imgMatrix[3][i][j]})
 		}
 	}
 	outfile, err := os.Create(filepath)
@@ -291,11 +291,13 @@ func SaveAsJPEG(filepath string, imgMatrix [][][]uint8, quality int) error {
 	return nil
 }
 
-func Otsu(GaryChannel [][]uint8) {
+func Otsu(GaryChannel [][]uint8) (OtsuChannel [][]uint8) {
+
 	GarySum := make([]int, 256, 256)
 	GaryPre := make([]float32, 256, 256)
 	height := len(GaryChannel)
 	width := len(GaryChannel[0])
+	OtsuChannel = NewCChannel(height, width)
 	for i := 0; i < height; i++ {
 		for j := 0; j < width; j++ {
 			GarySum[GaryChannel[i][j]]++
@@ -321,9 +323,16 @@ func Otsu(GaryChannel [][]uint8) {
 		deltaMax  float32 = 0
 		threshold uint8   = 0
 	)
-
-	for i := 0; i < 256; i++ {
-		for j := 0; j < 256; j++ {
+	for i := 0; i < 255; i++ {
+		w0 = 0
+		w1 = 0
+		u0tmp = 0
+		u1tmp = 0
+		u0 = 0
+		u1 = 0
+		u = 0
+		deltaTmp = 0
+		for j := 1; j < 256; j++ {
 			if j <= i {
 				w0 += GaryPre[j]
 				u0tmp += float32(j) * GaryPre[j]
@@ -335,46 +344,26 @@ func Otsu(GaryChannel [][]uint8) {
 		u0 = u0tmp / w0
 		u1 = u1tmp / w1
 		u = u0tmp + u1tmp
+		fmt.Printf("u0:%v, u1:%v, U:%v\n", u0, u1, u)
 		deltaTmp = w0*(u0-u)*(u0-u) + w1*(u1-u)*(u1-u)
+		fmt.Printf("tmp:%v, max:%v\n", deltaTmp, deltaMax)
 		if deltaTmp > deltaMax {
 			deltaMax = deltaTmp
-			fmt.Println(i)
 			threshold = uint8(i)
 		}
 	}
-	fmt.Println(threshold)
+	fmt.Printf("T:%v\n", threshold)
 
-	// float w0, w1, u0tmp, u1tmp, u0, u1, u, deltaTmp, deltaMax = 0;
-	// for (i = 0; i < GrayScale; i++)     // i作为阈值
-	// {
-	//     w0 = w1 = u0tmp = u1tmp = u0 = u1 = u = deltaTmp = 0;
-	//     for (j = 0; j < GrayScale; j++)
-	//     {
-	//         if (j <= i)   //背景部分
-	//         {
-	//             w0 += pixelPro[j];
-	//             u0tmp += j * pixelPro[j];
-	//         }
-	//         else   //前景部分
-	//         {
-	//             w1 += pixelPro[j];
-	//             u1tmp += j * pixelPro[j];
-	//         }
-	//     }
-	//     u0 = u0tmp / w0;
-	//     u1 = u1tmp / w1;
-	//     u = u0tmp + u1tmp;
-	//     deltaTmp = w0 * pow((u0 - u), 2) + w1 * pow((u1 - u), 2);
-	//     if (deltaTmp > deltaMax)
-	//     {
-	//         deltaMax = deltaTmp;
-	//         threshold = i;
-	//     }
-	// }
-
-	// return threshold;
-
-	// fmt.Printf("max1:%v, max2:%v\n", MaxIndex1, MaxIndex2)
+	for i := 0; i < height; i++ {
+		for j := 0; j < width; j++ {
+			if GaryChannel[i][j] > threshold {
+				OtsuChannel[i][j] = 255
+			} else {
+				OtsuChannel[i][j] = 0
+			}
+		}
+	}
+	return
 }
 
 //--------------------------------------------------------------------------
