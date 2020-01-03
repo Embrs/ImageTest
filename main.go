@@ -11,6 +11,7 @@ import (
 )
 
 func main() {
+	// test
 	t1 := time.Now()
 	img := MustRead("example/test.jpg")
 	// fmt.Println("%v", img)
